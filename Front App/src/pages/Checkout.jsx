@@ -22,8 +22,12 @@ const Checkout = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const commandeQuantite = []
+
+
+
   cartItems.forEach(item => {
-    
+    commandeQuantite.push({Id_Article:item.id, quantitee:item.quantity})
   });
 
 
@@ -35,8 +39,7 @@ const Checkout = () => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        key1: 'value1',
-        key2: 'value2'
+        articles: commandeQuantite,
       })
     })
     .then(response => {
