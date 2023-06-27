@@ -42,16 +42,9 @@ router.get('/commandes/:id', async(req, res) => {
     }
 });
 
-
-
-
-
-
 router.post('/payment', async(req, res) => {
     // Get the order data from the request body
     const { articles } = req.body;
-    console.log(req.headers['x-user-uid'])
-    console.log(req.headers)
 
     // Create the order
     const order = {
