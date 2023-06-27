@@ -53,35 +53,31 @@ const Checkout = () => {
     });
   };
 
-
-
   return (
     <Helmet title="Checkout">
       <CommonSection title="Checkout" />
       <section>
         <Container>
           <Row>
-            <Col lg="8" md="6">
-                <button onClick={handleClick} type="submit" className="addTOCart__btn">
-                  Payment
-                </button>
-            </Col>
-
-            <Col lg="4" md="6">
-              <div className="checkout__bill">
+            <h6 className="mb-4">Shipping Address</h6>
+            <div className="checkout__bill">
                 <h6 className="d-flex align-items-center justify-content-between mb-3">
-                  Subtotal: <span>${cartTotalAmount}</span>
+                  Subtotal: ${cartTotalAmount}
                 </h6>
                 <h6 className="d-flex align-items-center justify-content-between mb-3">
-                  Shipping: <span>${shippingCost}</span>
+                  Shipping: ${shippingCost}
                 </h6>
                 <div className="checkout__total">
                   <h5 className="d-flex align-items-center justify-content-between">
-                    Total: <span>${totalAmount}</span>
+                    Total: ${totalAmount}
                   </h5>
                 </div>
               </div>
-            </Col>
+              <form className="checkout__form" onSubmit={submitHandler}>
+                <button type="submit" className="addTOCart__btn">
+                  Payment
+                </button>
+              </form>
           </Row>
         </Container>
       </section>
