@@ -29,6 +29,14 @@ const nav__links = [
 {
   display: "Profil",
   path: "/users",
+},
+{
+  display: "Admin",
+  path: "/panel",
+},
+{
+  display: "Livreur",
+  path: "/livreur",
 }
 ];
 

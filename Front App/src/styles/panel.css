@@ -1,0 +1,68 @@
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.button-row button {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-row button:hover {
+  background-color: #ddd;
+}
+
+.button-row button:focus {
+  outline: none;
+}
+
+.button-row button.active {
+  background-color: #333;
+  color: #fff;
+}
+
+/* Styles pour les boutons "Mettre à jour" */
+button.maj {
+  background-color: #f5a623;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+}
+
+button.maj:hover {
+  background-color: #e59213;
+}
+
+/* Styles pour les boutons "Supprimer" */
+button.sup {
+  background-color: #e74c3c;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  margin-left: 2rem;
+}
+
+button.sup:hover {
+  background-color: #c0392b;
+}
+
+/* Styles pour les boutons "Ajouter" */
+button.add {
+  background-color: #27ae60;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+}
+
+button.add:hover {
+  background-color: #219651;
+}
