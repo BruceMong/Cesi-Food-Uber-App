@@ -22,12 +22,12 @@ const Checkout = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const commandeQuantite = []
+  const articles = []
 
 
 
   cartItems.forEach(item => {
-    commandeQuantite.push({Id_Article:item.id, quantitee:item.quantity})
+    articles.push({Id_Article:item.id, Quantitee:item.quantity})
   });
 
 
@@ -39,13 +39,15 @@ const Checkout = () => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        articles: commandeQuantite,
+        articles: articles,
       })
     })
     .then(response => {
       console.log(response.json())
+      if (response.status === 200 || response.status === 201) {
       dispatch(cartActions.reset());
       navigate("/status");
+    }
   })
     .then(data => console.log(data))
     .catch((error) => {

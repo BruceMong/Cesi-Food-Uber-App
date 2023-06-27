@@ -42,16 +42,9 @@ router.get('/commandes/:id', async(req, res) => {
     }
 });
 
-
-
-
-
-
 router.post('/payment', async(req, res) => {
     // Get the order data from the request body
-    const { uid } = req.body;
-    console.log(req.headers['x-user-uid'])
-    console.log(req.headers)
+    const { articles } = req.body;
 
     // Create the order
     const order = {
@@ -63,6 +56,15 @@ router.post('/payment', async(req, res) => {
 
     // Save the order to Firestore
     admin.firestore().collection('Commandes').add(order)
+        .then((docRef) => {
+            articles.forEach((article) => {
+                admin.firestore().collection('CommandesQuantitees').add({
+                    Id_Article: article.Id_Article,
+                    Id_Commande: docRef.id,
+                    Quantitee: article.quantitee
+                })
+            })
+        })
         .then((docRef) => {
             res.status(201).send({ id: docRef.id });
         })
