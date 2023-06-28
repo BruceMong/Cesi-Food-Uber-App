@@ -18,10 +18,18 @@ const Status = () => {
     const fetchData = async () => {
       try {
         const db = firebase.firestore();
-        const snapshot = await db
-          .collection("Commandes")
-          .where("Statut", "==", "Livrée")
-          .get();
+        let snapshot;
+        if (showDelivered) {
+          snapshot = await db
+            .collection("Commandes")
+            .where("Statut", "==", "Livrée")
+            .get();
+        } else {
+          snapshot = await db
+            .collection("Commandes")
+            .where("Statut", "==", "En livraison")
+            .get();
+        }
         const data = snapshot.docs.map((doc) => {
           return { id: doc.id, ...doc.data() };
         });
@@ -34,7 +42,7 @@ const Status = () => {
     };
 
     fetchData();
-  }, []);
+  }, [showDelivered]);
 
   return (
     <div>
@@ -48,19 +56,20 @@ const Status = () => {
                   onClick={handleShowDelivered}
                 >
                   {showDelivered
-                    ? "Afficher l'historique des commandes"
-                    : "Afficher les livraisons en cours"}
+                    ? "Afficher les livraisons en cours"
+                    : "Afficher l'historique des commandes"}
                 </button>
               </div>
               {showDelivered ? (
                 <>
-                  <h4 className="mb-3">Livraisons livrées</h4>
+                  <h4 className="mb-3">Historique des commandes</h4>
                   <table className="table table-bordered">
                     <thead>
                       <tr>
-                        <th>Image</th>
-                        <th>Nom du produit</th>
-                        <th>Quantité</th>
+                        <th>Client</th>
+                        <th>Livreur</th>
+                        <th>Commandes</th>
+                        <th>Prix Total</th>
                         <th>Date de livraison</th>
                       </tr>
                     </thead>
@@ -73,7 +82,7 @@ const Status = () => {
                 </>
               ) : (
                 <>
-                  <h4 className="mb-3">Historique des commandes</h4>
+                  <h4 className="mb-3">Livraisons en cours</h4>
                   <table className="table table-bordered">
                     <thead>
                       <tr>
@@ -81,7 +90,7 @@ const Status = () => {
                         <th>Livreur</th>
                         <th>Commandes</th>
                         <th>Prix Total</th>
-                        <th>Date de livraison</th>
+                        <th>Date de commande</th>
                       </tr>
                     </thead>
                     <tbody>
