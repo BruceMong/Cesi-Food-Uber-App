@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
+import "firebase/compat/firestore";
 import "../styles/users.css";
 
 const Users = () => {
@@ -7,42 +10,115 @@ const Users = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [user, setUser] = useState(null);
+  const [currentPassword, setCurrentPassword] = useState("");
 
-  const handleNameSubmit = (e) => {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = firebase.auth().currentUser;
+        if (currentUser) {
+          setUser(currentUser);
+          const snapshot = await firebase.firestore().collection("users").doc(currentUser.uid).get();
+          if (snapshot.exists) {
+            const userData = snapshot.data();
+            console.log("Données de l'utilisateur :", userData);
+            setName(userData.fullName);
+          } else {
+            console.log("Aucun document trouvé pour cet utilisateur");
+          }
+        } else {
+          console.log("Aucun utilisateur connecté");
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données de l'utilisateur :", error);
+      }
+    };
+
+    const fetchCurrentPassword = async () => {
+      try {
+        const currentUser = firebase.auth().currentUser;
+        if (currentUser) {
+          const methods = await firebase.auth().fetchSignInMethodsForEmail(currentUser.email);
+          if (methods.includes("password")) {
+            setCurrentPassword("********");
+          } else {
+            setCurrentPassword("N/A");
+          }
+        } else {
+          console.log("Aucun utilisateur connecté");
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération du mot de passe actuel :", error);
+      }
+    };
+
+    fetchUserData();
+    fetchCurrentPassword();
+  }, []);
+
+  const handleNameSubmit = async (e) => {
     e.preventDefault();
-    // Logique de mise à jour du nom
-    console.log("Mise à jour du nom :", name);
-    // Réinitialiser le champ du nom
+
+    try {
+      await firebase.firestore().collection("users").doc(user.uid).update({
+        fullName: name,
+      });
+      console.log("Le nom a été mis à jour dans la base de données.");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du nom dans la base de données :", error);
+    }
+
     setName("");
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    // Vérification de l'ancien mot de passe
-    if (oldPassword !== "ancienMotDePasse") {
-      console.log("Ancien mot de passe incorrect");
-      return;
+
+    try {
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        const credentials = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldPassword);
+        await currentUser.reauthenticateWithCredential(credentials);
+
+        if (newPassword !== confirmPassword) {
+          console.log("Le nouveau mot de passe ne correspond pas à la confirmation du mot de passe");
+          return;
+        }
+
+        await currentUser.updatePassword(newPassword);
+        console.log("Le mot de passe a été mis à jour avec succès.");
+      } else {
+        console.log("Aucun utilisateur connecté");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du mot de passe :", error);
     }
 
-    // Vérification de la correspondance entre le nouveau mot de passe et la confirmation du mot de passe
-    if (newPassword !== confirmPassword) {
-      console.log("Le nouveau mot de passe ne correspond pas à la confirmation du mot de passe");
-      return;
-    }
-
-    // Logique de mise à jour du mot de passe
-    console.log("Mise à jour du mot de passe :", newPassword);
-    // Réinitialiser les champs du mot de passe
     setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
   };
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    // Logique de mise à jour de l'e-mail
-    console.log("Mise à jour de l'e-mail :", email);
-    // Réinitialiser le champ de l'e-mail
+
+    try {
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        const credentials = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPassword);
+        await currentUser.reauthenticateWithCredential(credentials);
+
+        await currentUser.updateEmail(email);
+        console.log("L'e-mail a été mis à jour avec succès.");
+      } else {
+        console.log("Aucun utilisateur connecté");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'e-mail :", error);
+    }
+
+    setCurrentPassword("");
     setEmail("");
   };
 
@@ -91,6 +167,13 @@ const Users = () => {
           id="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+        />
+        <label htmlFor="currentPassword">Mot de passe actuel :</label>
+        <input
+          type="password"
+          id="currentPassword"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
         />
         <button type="submit">Mettre à jour l'e-mail</button>
       </form>
