@@ -33,48 +33,51 @@ const Login = () => {
     const password = loginPasswordRef.current.value;
 
     firebase
-    .auth()
-    .signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      // User signed in successfully
-      const user = userCredential.user;
-      console.log("Signed in user:", user);
-      // Get the ID token
-      user.getIdToken().then((idToken) => {
-        console.log("ID Token:", idToken);
-        // You can now send the ID token to your server
-        Cookies.set('token', idToken, { expires: 7 }); // The token will expire after 7 days
-        
-        // Fetch user profile data using the ID token
-        fetch(`http://localhost:3000/users/${user.uid}`, {
-          headers: {
-            Authorization: `Bearer ${idToken}`
-          }
-        })
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Error fetching user profile');
-          }
-        })
-        .then(data => {
-          // Handle the user profile data
-          console.log("User profile:", data);
-          // Perform additional actions or redirect to another page
-          navigate('/home');
-        })
-        .catch(error => {
-          console.error('Error:', error);
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // User signed in successfully
+        const user = userCredential.user;
+        console.log("Signed in user:", user);
+        // Get the ID token
+        user.getIdToken().then((idToken) => {
+          console.log("ID Token:", idToken);
+          // You can now send the ID token to your server
+          Cookies.set('token', idToken, { expires: 7 }); // The token will expire after 7 days
+
+          // Fetch user profile data using the ID token
+          fetch(`http://localhost:3000/users/${user.uid}`, {
+            headers: {
+              Authorization: `Bearer ${idToken}` 
+            }
+          })
+            .then(response => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Error fetching user profile');
+              }
+            })
+            .then(data => {
+              // Handle the user profile data
+              console.log("User profile:", data);
+              // Extract the role from the user profile data
+              const role = data.role;
+              console.log("User role:", role);
+              // Perform additional actions or redirect to another page
+              navigate('/home');
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
         });
+      })
+      .catch((error) => {
+        // Handle sign-in errors
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error("Sign-in error:", errorCode, errorMessage);
       });
-    })
-    .catch((error) => {
-      // Handle sign-in errors
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.error("Sign-in error:", errorCode, errorMessage);
-    });
   }
   
   return (

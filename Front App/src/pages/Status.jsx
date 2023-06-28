@@ -5,11 +5,6 @@ import { Link } from "react-router-dom";
 import firebase from "../firebase/config";
 import "firebase/firestore";
 
-// Import missing components
-// import CommonSection from "../components/UI/common-section/CommonSection";
-// import Helmet from "../components/Helmet/Helmet";
-// import "../styles/cart-page.css";
-
 const Status = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   const [showDelivered, setShowDelivered] = useState(false);
@@ -23,7 +18,10 @@ const Status = () => {
     const fetchData = async () => {
       try {
         const db = firebase.firestore();
-        const snapshot = await db.collection("Commandes").get();
+        const snapshot = await db
+          .collection("Commandes")
+          .where("Statut", "==", "Livrée")
+          .get();
         const data = snapshot.docs.map((doc) => {
           return { id: doc.id, ...doc.data() };
         });
@@ -37,9 +35,6 @@ const Status = () => {
 
     fetchData();
   }, []);
-
-  const deliveredItems = cartItems.filter((item) => item.status === "livré");
-  const inProgressItems = cartItems.filter((item) => item.status !== "livré");
 
   return (
     <div>
@@ -55,7 +50,6 @@ const Status = () => {
                   {showDelivered
                     ? "Afficher l'historique des commandes"
                     : "Afficher les livraisons en cours"}
-                    
                 </button>
               </div>
               {showDelivered ? (
@@ -72,9 +66,7 @@ const Status = () => {
                     </thead>
                     <tbody>
                       {deliveries.map((delivery, index) => (
-                        delivery.status === "livré" && (
-                          <Tr delivery={delivery} key={index} />
-                        )
+                        <Tr delivery={delivery} key={index} />
                       ))}
                     </tbody>
                   </table>
@@ -89,15 +81,12 @@ const Status = () => {
                         <th>Livreur</th>
                         <th>Commandes</th>
                         <th>Prix Total</th>
-                        <th>Statut</th>
                         <th>Date de livraison</th>
                       </tr>
                     </thead>
                     <tbody>
                       {deliveries.map((delivery, index) => (
-                        delivery.status !== "livré" && (
-                          <Tr delivery={delivery} key={index} />
-                        )
+                        <Tr delivery={delivery} key={index} />
                       ))}
                     </tbody>
                   </table>
@@ -111,22 +100,22 @@ const Status = () => {
   );
 };
 
-
 const Tr = (props) => {
-  const { id,Date_Livraison, Id_Client, Id_Livreur, Statut } = props.delivery;
+  const { id, Date_Livraison, Id_Client, Id_Livreur, Statut } = props.delivery;
   const [clientData, setClientData] = useState(null);
   const [foodDataArray, setFoodDataArray] = useState([]);
-  const [LivreurData, setLivreurData] = useState(null);
-  const [theClientData, settheClientData] = useState(null);
+  const [livreurData, setLivreurData] = useState(null);
+  const [theClientData, setTheClientData] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
 
-
-  
   useEffect(() => {
     const fetchClientData = async () => {
       try {
         const db = firebase.firestore();
-        const snapshot2 = await db.collection("CommandesQuantitees").where("Id_Commande", "==", id).get();
+        const snapshot2 = await db
+          .collection("CommandesQuantitees")
+          .where("Id_Commande", "==", id)
+          .get();
         const data2 = snapshot2.docs.map((doc) => doc.data());
 
         if (data2.length > 0) {
@@ -138,23 +127,23 @@ const Tr = (props) => {
     };
 
     fetchClientData();
-  },[]);
-
+  }, []);
 
   useEffect(() => {
     const fetchClientData2 = async () => {
       try {
         if (clientData !== null && clientData.length > 0) {
           const db = firebase.firestore();
-  
           const dataPromises = clientData.map(async (dataItem) => {
             const articleId = dataItem.Id_Article;
-            const snapshot3 = await db.collection("Articles").doc(articleId).get();
+            const snapshot3 = await db
+              .collection("Articles")
+              .doc(articleId)
+              .get();
             const data3 = snapshot3.data();
             return data3;
           });
-          
-          
+
           const articleDataArray = await Promise.all(dataPromises);
           setFoodDataArray(articleDataArray);
         }
@@ -162,65 +151,62 @@ const Tr = (props) => {
         console.log("Error fetching ARITCLES data from Firebase:", error);
       }
     };
-  
+
     fetchClientData2();
   }, [clientData]);
-  
 
   useEffect(() => {
     const fetchLivreurData3 = async () => {
       try {
         const db = firebase.firestore();
         const articleId = Id_Livreur;
-	      const snapshot4 = await db.collection("users").doc(articleId).get();
-	      const data4 = snapshot4.data();
+        const snapshot4 = await db.collection("users").doc(articleId).get();
+        const data4 = snapshot4.data();
         setLivreurData(data4);
-      } 
-      catch (error) {
+      } catch (error) {
         console.log("Error fetching livreur data from Firebase:", error);
       }
     };
 
     fetchLivreurData3();
-  },[Id_Livreur]);
+  }, [Id_Livreur]);
 
   useEffect(() => {
-    const fetchLivreurData3 = async () => {
+    const fetchClientData4 = async () => {
       try {
         const db = firebase.firestore();
         const articleId = Id_Client;
-	      const snapshot5 = await db.collection("users").doc(articleId).get();
-	      const data5 = snapshot5.data();
-        settheClientData(data5);
-      } 
-      catch (error) {
-        console.log("Error fetching livreur data from Firebase:", error);
+        const snapshot5 = await db.collection("users").doc(articleId).get();
+        const data5 = snapshot5.data();
+        setTheClientData(data5);
+      } catch (error) {
+        console.log("Error fetching client data from Firebase:", error);
       }
     };
 
-    fetchLivreurData3();
-  },[Id_Client]);
+    fetchClientData4();
+  }, [Id_Client]);
 
   useEffect(() => {
-    // Calculate the total price based on the clientData and foodDataArray
     const calculateTotalPrice = () => {
       let totalPrice = 0;
-      if (clientData && clientData.length > 0 && foodDataArray.length > 0) {
+      if (
+        clientData &&
+        clientData.length > 0 &&
+        foodDataArray.length > 0
+      ) {
         clientData.forEach((data, index) => {
-          
           const foodData = foodDataArray[index];
-          console.log(foodData)
           if (foodData) {
             const quantity = data.Quantitee;
             const price = foodData.Prix;
-            console.log(price) // Update this line to access the "Price" property
             totalPrice += quantity * price;
           }
         });
       }
       setTotalPrice(totalPrice);
     };
-  
+
     calculateTotalPrice();
   }, [clientData, foodDataArray]);
 
@@ -228,28 +214,29 @@ const Tr = (props) => {
     <>
       {clientData && clientData.length > 0 && (
         <tr>
-          {/* Render the client and livreur data */}
-          <td className="text-center">{theClientData ? theClientData.fullName : ""}</td>
-          <td className="text-center">{LivreurData ? LivreurData.fullName : ""}</td>
+          <td className="text-center">
+            {theClientData ? theClientData.fullName : ""}
+          </td>
+          <td className="text-center">
+            {livreurData ? livreurData.fullName : ""}
+          </td>
           <td className="text-center">
             {clientData.map((data, index) => (
               <span key={index}>
-                {foodDataArray[index] ? foodDataArray[index].Name : ""} ({data.Quantitee})
+                {foodDataArray[index] ? foodDataArray[index].Name : ""} (
+                {data.Quantitee})
                 {index !== clientData.length - 1 && ", "}
               </span>
             ))}
           </td>
           <td className="text-center">{totalPrice}</td>
           <td className="text-center">
-            {Statut === "livré" ? Date_Livraison : <div className="text-center cart__statut">{Statut}</div>}
+            {Date_Livraison ? Date_Livraison.toDate().toLocaleString() : ""}
           </td>
-          <td className="text-center">{Date_Livraison ? Date_Livraison.toDate().toLocaleString() : ""}</td>
         </tr>
       )}
     </>
   );
-  
-  
 };
 
 export default Status;
