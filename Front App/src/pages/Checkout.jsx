@@ -75,7 +75,7 @@ const Checkout = () => {
                   </h5>
                 </div>
               </div>
-              <form className="checkout__form" onSubmit={submitHandler}>
+              <form className="checkout__form" onSubmit={handleClick}>
                 <button type="submit" className="addTOCart__btn">
                   Payment
                 </button>
