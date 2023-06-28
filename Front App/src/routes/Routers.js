@@ -7,6 +7,8 @@ import FoodDetails from "../pages/FoodDetails";
 import Cart from "../pages/Cart";
 import Status from "../pages/Status";
 import Users from "../pages/Users";
+import Panel from "../pages/PanelAdmin";
+import Livreur from "../pages/Livreur";
 import Checkout from "../pages/Checkout";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -21,6 +23,8 @@ const Routers = () => {
       <Route path="/cart" element={<Cart />} />
       <Route path="/status" element={<Status />} />
       <Route path="/users" element={<Users />} />
+      <Route path="/panel" element={<Panel />} />
+      <Route path="/livreur" element={<Livreur />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

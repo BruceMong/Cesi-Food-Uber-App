@@ -1,6 +1,11 @@
 .checkout__bill {
   background: #fde4e4;
   padding: 30px;
+  width: 50%  ! important;
+  position: relative;
+  text-align: center;
+  margin: 0 auto; /* Centre horizontalement le div */
+  margin-bottom: 2rem;
 }
 
 .checkout__total {
@@ -15,4 +20,22 @@
   .checkout__bill {
     margin-top: 40px;
   }
+}
+
+.checkout__form {
+  margin-top: 50px; /* Ajoute une marge de 20 pixels au-dessus du formulaire */
+}
+
+.addTOCart__btn {
+  margin-top: 20px; /* Ajoute une marge de 20 pixels au-dessus du bouton */
+  width: 50%  ! important;
+  text-align: center;
+  margin: 0 auto; /* Centre horizontalement le div */
+}
+
+.checkout__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
