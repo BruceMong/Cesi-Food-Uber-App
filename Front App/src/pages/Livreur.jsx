@@ -56,22 +56,18 @@ const Livreur = () => {
               <table className="table table-bordered">
                 <thead>
                   <tr>
-                    <th>Image</th>
-                    <th>Nom du produit</th>
-                    <th>Quantité</th>
+                    <th>Commande</th>
                     <th>Date de livraison</th>
-                    <th>Adresse</th>
+                    <th>Nom client</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Exemple de ligne de livraison */}
                   <tr>
-                    <td>Image du produit</td>
-                    <td>Nom du produit</td>
-                    <td>Quantité</td>
+                    <td>Commande</td>
                     <td>Date de livraison</td>
-                    <td>Adresse</td>
+                    <td>Nom client</td>
                     <td>
                       {accepterCommande ? (
                         <>
