@@ -84,7 +84,6 @@ const Checkout = () => {
                   Payment
                 </button>
               </form>
-              </Col>
 
           </Row>
         </Container>
