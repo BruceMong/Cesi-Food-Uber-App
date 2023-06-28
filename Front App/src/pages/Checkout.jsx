@@ -17,8 +17,6 @@ const Checkout = () => {
 
 
   const totalAmount = cartTotalAmount + Number(shippingCost);
-  console.log(Cookies.get('token'))
-  console.log(cartItems)
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -35,24 +33,30 @@ const Checkout = () => {
     fetch('http://localhost:3000/payment', {
       method: 'POST',
       headers: {
-        'Authorization' : 'Bearer ' + Cookies.get('token'),
+        'Authorization': 'Bearer ' + Cookies.get('token'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         articles: articles,
       })
     })
-    .then(response => {
-      console.log(response.json())
-      if (response.status === 200 || response.status === 201) {
-      dispatch(cartActions.reset());
-      navigate("/status");
-    }
-  })
-    .then(data => console.log(data))
-    .catch((error) => {
-      console.error('Error:', error);
-    });
+      .then(response => {
+        if (response.ok) {
+          // Résoudre la promesse de réponse JSON
+          return response.json();
+        } else {
+          throw new Error('Erreur lors de la requête');
+        }
+      })
+      .then(data => {
+        console.log(data); // Afficher les données JSON de la réponse
+        // Autres actions à effectuer après avoir obtenu les données
+        dispatch(cartActions.reset());
+        navigate("/status");
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   };
 
   return (
@@ -80,6 +84,8 @@ const Checkout = () => {
                   Payment
                 </button>
               </form>
+              </Col>
+
           </Row>
         </Container>
       </section>

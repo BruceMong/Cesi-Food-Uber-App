@@ -55,23 +55,24 @@ router.post('/payment', async(req, res) => {
     };
 
     // Save the order to Firestore
-    admin.firestore().collection('Commandes').add(order)
-        .then((docRef) => {
-            articles.forEach((article) => {
-                admin.firestore().collection('CommandesQuantitees').add({
-                    Id_Article: article.Id_Article,
-                    Id_Commande: docRef.id,
-                    Quantitee: article.quantitee
-                })
-            })
-        })
-        .then((docRef) => {
-            res.status(201).send({ id: docRef.id });
-        })
-        .catch((error) => {
-            console.error('Error creating order: ', error);
-            res.status(500).send('Error creating order');
+    try {
+        const docRef = await admin.firestore().collection('Commandes').add(order);
+
+        const promises = articles.map((article) => {
+            return admin.firestore().collection('CommandesQuantitees').add({
+                Id_Article: article.Id_Article,
+                Id_Commande: docRef.id,
+                Quantitee: article.Quantitee
+            });
         });
+
+        await Promise.all(promises);
+        console.log("hey")
+        res.status(201).send({ id: docRef.id });
+    } catch (error) {
+        console.error('Error creating order: ', error);
+        res.status(500).send('Error creating order');
+    }
 });
 
 
