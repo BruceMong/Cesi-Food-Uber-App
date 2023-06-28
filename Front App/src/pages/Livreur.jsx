@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
 import CommonSection from "../components/UI/common-section/CommonSection";
 import Helmet from "../components/Helmet/Helmet";
 //import "../styles/cart-page.css";
-import { useSelector } from "react-redux";
 import { Container, Row, Col } from "reactstrap";
-import { Link } from "react-router-dom";
+import "../styles/livreur.css";
 
 const Livreur = () => {
   const [livraisonRecuperee, setLivraisonRecuperee] = useState(false);
@@ -71,7 +69,7 @@ const Livreur = () => {
                           Livré
                         </>
                       ) : (
-                        <button onClick={handleAccepterCommande}>
+                        <button className="btna" onClick={handleAccepterCommande} >
                           Accepter la commande
                         </button>
                       )}
