@@ -2,6 +2,9 @@ const express = require("express");
 var router = express.Router();
 const { FieldValue } = require('firebase-admin/firestore')
 const { db } = require('../firebase.js')
+const adminMiddleware = require("../middlewares/adminMiddleware");
+
+
 
 // GET - Récupérer tous les articles
 router.get('/articles', async(req, res) => {
@@ -69,8 +72,10 @@ router.put('/articles/:id', async(req, res) => {
     }
 });
 
+
 // DELETE - Supprimer un article
-router.delete('/articles/:id', async(req, res) => {
+router.delete('/articles/:id', adminMiddleware, async(req, res) => {
+    console.log(req.params.id)
     try {
         const articleId = req.params.id;
         const articleRef = db.collection('Articles').doc(articleId);

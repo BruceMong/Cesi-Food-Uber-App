@@ -1,28 +1,77 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import CommonSection from "../components/UI/common-section/CommonSection";
 import Helmet from "../components/Helmet/Helmet";
 import { Container, Row, Col } from "reactstrap";
+import Cookies from 'js-cookie';
+import axios from 'axios';
+
+
 import "../styles/panel.css";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [restaurantsData, setRestaurantsData] = useState([
-    { nom: "Restaurant 1", adresse: "Adresse 1" },
-    { nom: "Restaurant 2", adresse: "Adresse 2" },
-    { nom: "Restaurant 3", adresse: "Adresse 3" },
   ]);
   const [usersData, setUsersData] = useState([
-    { nom: "Utilisateur 1", email: "email1@example.com", role: "Role 1" },
-    { nom: "Utilisateur 2", email: "email2@example.com", role: "Role 2" },
-    { nom: "Utilisateur 3", email: "email3@example.com", role: "Role 3" },
   ]);
   const [productsData, setProductsData] = useState([
-    { titre: "Produit 1", description: "Description 1", prix: 10, type: "Type 1" },
-    { titre: "Produit 2", description: "Description 2", prix: 20, type: "Type 2" },
-    { titre: "Produit 3", description: "Description 3", prix: 30, type: "Type 3" },
   ]);
+  const token = Cookies.get("token");
+
+  const refresh = () => 
+  {
+  // Fetch restaurants data
+  axios.get('http://localhost:3000/restaurants', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    console.log("resto profile:", response.data);
+    setRestaurantsData(response.data);
+  })
+  .catch(error => {
+    console.error('Error fetching restaurants', error);
+  });
+
+  // Fetch users data
+  axios.get('http://localhost:3000/users', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    console.log("users profile:", response.data);
+    setUsersData(response.data);
+  })
+  .catch(error => {
+    console.error('Error fetching users', error);
+  });
+
+  // Fetch articles data
+  axios.get('http://localhost:3000/articles', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    console.log("articles:", response.data);
+    setProductsData(response.data);
+  })
+  .catch(error => {
+    console.error('Error fetching articles', error);
+  });
+}
+
+
+  useEffect(() => {
+  
+    refresh()
+  }, []);
+
+
 
   const toggleTab = (tab) => {
     if (activeTab === tab) {
@@ -68,11 +117,19 @@ const Panel = () => {
     });
   };
 
-  const handleRemoveUser = (index) => {
-    setUsersData((prevData) => {
-      const newData = [...prevData];
-      newData.splice(index, 1);
-      return newData;
+  const handleRemoveUser = (user) => {
+
+    axios.delete(`http://localhost:3000/users/${user.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }})
+    .then(response => {
+      // Suppression réussie, effectuez les actions nécessaires (par exemple, mise à jour de l'état)
+      console.log('Utilisateur supprimé avec succès');
+    })
+    .catch(error => {
+      // Gestion des erreurs lors de la suppression de l'utilisateur
+      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
     });
   };
 
@@ -87,21 +144,21 @@ const Panel = () => {
   const handleAddRestaurant = () => {
     setRestaurantsData((prevData) => [
       ...prevData,
-      { nom: "", adresse: "" },
+      { Nom: "", Adresse: "" },
     ]);
   };
 
   const handleAddUser = () => {
     setUsersData((prevData) => [
       ...prevData,
-      { nom: "", email: "", role: "" },
+      { fullName: "", email: "", role: "" },
     ]);
   };
 
   const handleAddProduct = () => {
     setProductsData((prevData) => [
       ...prevData,
-      { titre: "", description: "", prix: 0, type: "" },
+      { Name: "", Description: "", Prix: 0, Type: "" },
     ]);
   };
 
@@ -125,12 +182,12 @@ const Panel = () => {
             <Col lg="12">
               <form className="search-form" onSubmit={handleSearchSubmit}>
                 <input
-                  type="text"
+                  Type="text"
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  placeholder="Rechercher par ID, nom ou adresse"
+                  placeholder="Rechercher par ID, Nom ou Adresse"
                 />
-                <button type="submit">Rechercher</button>
+                <button Type="submit">Rechercher</button>
               </form>
             </Col>
           </Row>
@@ -152,24 +209,24 @@ const Panel = () => {
                         <tr key={index}>
                           <td>
                             <input
-                              type="text"
-                              value={restaurant.nom}
+                              Type="text"
+                              value={restaurant.Nom}
                               onChange={(e) =>
-                                handleRestaurantChange(index, "nom", e.target.value)
+                                handleRestaurantChange(index, "Nom", e.target.value)
                               }
                             />
                           </td>
                           <td>
                             <input
-                              type="text"
-                              value={restaurant.adresse}
+                              Type="text"
+                              value={restaurant.Adresse}
                               onChange={(e) =>
-                                handleRestaurantChange(index, "adresse", e.target.value)
+                                handleRestaurantChange(index, "Adresse", e.target.value)
                               }
                             />
                           </td>
                           <td>
-                            <button className="maj" type="button" onClick={() => handleRestaurantChange(index, "nom", "Nouveau nom")}>
+                            <button className="maj" Type="button" onClick={() => handleRestaurantChange(index, "Nom", "Nouveau Nom")}>
                               Mettre à jour
                             </button>
                             <button className="sup" onClick={() => handleRemoveRestaurant(index)}>
@@ -194,8 +251,7 @@ const Panel = () => {
                   <table className="table table-bordered table-borderless">
                     <thead>
                       <tr>
-                        <th>Nom</th>
-                        <th>Email</th>
+                        <th>fullName</th>
                         <th>Role</th>
                         <th>Action</th> {/* Ajout de la colonne pour les boutons */}
                       </tr>
@@ -205,25 +261,16 @@ const Panel = () => {
                         <tr key={index}>
                           <td>
                             <input
-                              type="text"
-                              value={user.nom}
+                              Type="text"
+                              value={user.fullName}
                               onChange={(e) =>
-                                handleUserChange(index, "nom", e.target.value)
+                                handleUserChange(index, "fullName", e.target.value)
                               }
                             />
                           </td>
                           <td>
                             <input
-                              type="email"
-                              value={user.email}
-                              onChange={(e) =>
-                                handleUserChange(index, "email", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
+                              Type="text"
                               value={user.role}
                               onChange={(e) =>
                                 handleUserChange(index, "role", e.target.value)
@@ -231,10 +278,10 @@ const Panel = () => {
                             />
                           </td>
                           <td>
-                            <button className="maj" type="button" onClick={() => handleUserChange(index, "nom", "Nouveau nom")}>
+                            <button className="maj" Type="button" onClick={() => handleUserChange(index, "fullName", "new fullName")}>
                               Mettre à jour
                             </button>
-                            <button className="sup" onClick={() => handleRemoveUser(index)}>
+                            <button className="sup" onClick={() => handleRemoveUser(user)}>
                               Supprimer
                             </button>
                           </td> {/* Déplacement des boutons à l'intérieur de chaque ligne */}
@@ -256,7 +303,7 @@ const Panel = () => {
                   <table className="table table-bordered table-borderless">
                     <thead>
                       <tr>
-                        <th>Titre</th>
+                        <th>Name</th>
                         <th>Description</th>
                         <th>Prix</th>
                         <th>Type</th>
@@ -268,42 +315,42 @@ const Panel = () => {
                         <tr key={index}>
                           <td>
                             <input
-                              type="text"
-                              value={product.titre}
+                              Type="text"
+                              value={product.Name}
                               onChange={(e) =>
-                                handleProductChange(index, "titre", e.target.value)
+                                handleProductChange(index, "Name", e.target.value)
                               }
                             />
                           </td>
                           <td>
                             <input
-                              type="text"
-                              value={product.description}
+                              Type="text"
+                              value={product.Description}
                               onChange={(e) =>
-                                handleProductChange(index, "description", e.target.value)
+                                handleProductChange(index, "Description", e.target.value)
                               }
                             />
                           </td>
                           <td>
                             <input
-                              type="number"
-                              value={product.prix}
+                              Type="number"
+                              value={product.Prix}
                               onChange={(e) =>
-                                handleProductChange(index, "prix", e.target.value)
+                                handleProductChange(index, "Prix", e.target.value)
                               }
                             />
                           </td>
                           <td>
                             <input
-                              type="text"
-                              value={product.type}
+                              Type="text"
+                              value={product.Type}
                               onChange={(e) =>
-                                handleProductChange(index, "type", e.target.value)
+                                handleProductChange(index, "Type", e.target.value)
                               }
                             />
                           </td>
                           <td>
-                            <button className="maj" type="button" onClick={() => handleProductChange(index, "titre", "Nouveau titre")}>
+                            <button className="maj" Type="button" onClick={() => handleProductChange(index, "Name", "Nouveau Name")}>
                               Mettre à jour
                             </button>
                             <button className="sup" onClick={() => handleRemoveProduct(index)}>
