@@ -172,7 +172,7 @@ const Users = () => {
         <input
           type="password"
           id="currentPassword"
-          value={currentPassword}
+          value={""}
           onChange={(e) => setCurrentPassword(e.target.value)}
         />
         <button type="submit">Mettre à jour l'e-mail</button>
