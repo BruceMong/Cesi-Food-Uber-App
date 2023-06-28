@@ -6,6 +6,30 @@ var router = express.Router();
 const adminMiddleware = require("../middlewares/adminMiddleware");
 
 
+// PUT - Modifier un utilisateur
+router.put("/users/:id", adminMiddleware, async(req, res) => {
+    const userId = req.params.id;
+    const { fullName, role } = req.body;
+
+    try {
+        const userDoc = await db.collection("users").doc(userId).get();
+
+        if (!userDoc.exists) {
+            res.status(404).send("User not found");
+            return;
+        }
+
+        await userDoc.ref.update({
+            fullName: fullName,
+            role: role,
+        });
+
+        res.status(200).send("User updated successfully");
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).send("Error updating user");
+    }
+});
 
 // GET - Récupérer tous les restaurants
 router.get('/users', adminMiddleware, async(req, res) => {

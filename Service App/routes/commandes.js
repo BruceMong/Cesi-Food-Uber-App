@@ -4,6 +4,33 @@ const { FieldValue } = require('firebase-admin/firestore')
 const { db } = require('../firebase.js')
 const { addDays } = require('date-fns');
 const admin = require('firebase-admin');
+const adminMiddleware = require("../middlewares/adminMiddleware");
+const livreurMiddleware = require("../middlewares/livreurMiddleware");
+
+
+
+
+// GET - Récupérer les commandes par ID de livreur
+router.get('/commandes/:livreurId', livreurMiddleware, async(req, res) => {
+    const livreurId = req.params.livreurId;
+
+    try {
+        const commandesRef = db.collection('Commandes');
+        const snapshot = await commandesRef.where('id_livreur', '==', livreurId)
+            .orWhere('id_livreur', '==', null)
+            .get();
+
+        const commandes = [];
+        snapshot.forEach((doc) => {
+            commandes.push({ id: doc.id, ...doc.data() });
+        });
+
+        res.status(200).json(commandes);
+    } catch (error) {
+        console.error('Error getting commandes:', error);
+        res.sendStatus(500);
+    }
+});
 
 // GET - Récupérer toutes les commandes
 router.get('/commandes', async(req, res) => {

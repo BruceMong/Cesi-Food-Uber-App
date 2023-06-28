@@ -19,6 +19,12 @@ const Panel = () => {
   const [productsData, setProductsData] = useState([
   ]);
   const token = Cookies.get("token");
+  const [newRestaurant, setNewRestaurant] = useState([
+  ]);
+  const [newProduct, setNewProduct] = useState([
+  ]);
+  const [newUser, setNewUser] = useState([
+  ]);
 
   const refresh = () => 
   {
@@ -91,29 +97,94 @@ const Panel = () => {
     console.log("Recherche soumise :", searchQuery);
   };
 
-  const handleRestaurantChange = (index, key, value) => {
-    const newData = [...restaurantsData];
+
+
+  const handleRestaurantInputChange = (index, key, value) => {
+    let newData = [...restaurantsData];
     newData[index][key] = value;
     setRestaurantsData(newData);
   };
 
-  const handleUserChange = (index, key, value) => {
-    const newData = [...usersData];
+  const handleUserInputChange = (index, key, value) => {
+    let newData = [...usersData];
     newData[index][key] = value;
     setUsersData(newData);
   };
 
-  const handleProductChange = (index, key, value) => {
-    const newData = [...productsData];
+  
+  const handleArticleInputChange = (index, key, value) => {
+    let newData = [...productsData];
     newData[index][key] = value;
     setProductsData(newData);
   };
+  
 
-  const handleRemoveRestaurant = (index) => {
-    setRestaurantsData((prevData) => {
-      const newData = [...prevData];
-      newData.splice(index, 1);
-      return newData;
+
+  const handleRestaurantChange = (restaurant) => {  
+    axios.put(`http://localhost:3000/restaurants/${restaurant.id}`, restaurant, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log('Restaurant updated successfully');
+      refresh()
+
+    })
+    .catch(error => {
+      console.error('Error updating restaurant:', error);
+    });
+  };
+  
+  const handleUserChange = (user) => {
+
+  
+    axios.put(`http://localhost:3000/users/${user.id}`, user, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log('User updated successfully');
+      refresh()
+
+    })
+    .catch(error => {
+      console.error('Error updating user:', error);
+    });
+  };
+  
+  const handleProductChange = (article) => {
+  
+    axios.put(`http://localhost:3000/articles/${article.id}`, article, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log('Product updated successfully');
+      refresh()
+
+    })
+    .catch(error => {
+      console.error('Error updating product:', error);
+    });
+  };
+
+  const handleRemoveRestaurant = (restaurant) => {
+    axios.delete(`http://localhost:3000/restaurants/${restaurant.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }})
+    .then(response => {
+      // Suppression réussie, effectuez les actions nécessaires (par exemple, mise à jour de l'état)
+      console.log('Utilisateur supprimé avec succès')
+      refresh()
+      ;
+    })
+    .catch(error => {
+      // Gestion des erreurs lors de la suppression de l'utilisateur
+      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
     });
   };
 
@@ -126,6 +197,8 @@ const Panel = () => {
     .then(response => {
       // Suppression réussie, effectuez les actions nécessaires (par exemple, mise à jour de l'état)
       console.log('Utilisateur supprimé avec succès');
+      refresh()
+
     })
     .catch(error => {
       // Gestion des erreurs lors de la suppression de l'utilisateur
@@ -133,33 +206,57 @@ const Panel = () => {
     });
   };
 
-  const handleRemoveProduct = (index) => {
-    setProductsData((prevData) => {
-      const newData = [...prevData];
-      newData.splice(index, 1);
-      return newData;
+  const handleRemoveProduct = (article) => {
+    axios.delete(`http://localhost:3000/articles/${article.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }})
+    .then(response => {
+      // Suppression réussie, effectuez les actions nécessaires (par exemple, mise à jour de l'état)
+      console.log('Utilisateur supprimé avec succès');
+      refresh()
+
+    })
+    .catch(error => {
+      // Gestion des erreurs lors de la suppression de l'utilisateur
+      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
     });
   };
 
   const handleAddRestaurant = () => {
-    setRestaurantsData((prevData) => [
-      ...prevData,
-      { Nom: "", Adresse: "" },
-    ]);
+    
+    axios.post('http://localhost:3000/restaurants', newRestaurant, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      refresh()
+
+      console.log('restaurant added successfully');
+    })
+    .catch(error => {
+      console.error('Error adding restaurant:', error);
+    });
   };
 
   const handleAddUser = () => {
-    setUsersData((prevData) => [
-      ...prevData,
-      { fullName: "", email: "", role: "" },
-    ]);
+// ne pas faire
   };
 
   const handleAddProduct = () => {
-    setProductsData((prevData) => [
-      ...prevData,
-      { Name: "", Description: "", Prix: 0, Type: "" },
-    ]);
+    axios.post('http://localhost:3000/articles', newProduct, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log('Product added successfully');
+      refresh()
+    })
+    .catch(error => {
+      console.error('Error adding product:', error);
+    });
   };
 
   return (
@@ -212,7 +309,7 @@ const Panel = () => {
                               Type="text"
                               value={restaurant.Nom}
                               onChange={(e) =>
-                                handleRestaurantChange(index, "Nom", e.target.value)
+                                handleRestaurantInputChange(index, "Nom", e.target.value)
                               }
                             />
                           </td>
@@ -221,12 +318,13 @@ const Panel = () => {
                               Type="text"
                               value={restaurant.Adresse}
                               onChange={(e) =>
-                                handleRestaurantChange(index, "Adresse", e.target.value)
+                                handleRestaurantInputChange(index, "Adresse", e.target.value)
+
                               }
                             />
                           </td>
                           <td>
-                            <button className="maj" Type="button" onClick={() => handleRestaurantChange(index, "Nom", "Nouveau Nom")}>
+                            <button className="maj" Type="button" onClick={() => handleRestaurantChange(restaurant)}>
                               Mettre à jour
                             </button>
                             <button className="sup" onClick={() => handleRemoveRestaurant(index)}>
@@ -236,9 +334,30 @@ const Panel = () => {
                         </tr>
                       ))}
                       <tr>
-                        <td>
-                          <button className="add" onClick={handleAddRestaurant}>Ajouter</button>
-                        </td>
+                      <td>
+            {/* Formulaire pour ajouter un restaurant */}
+            <td>
+              <input
+                type="text"
+                value={newRestaurant.Nom}
+                onChange={(e) => setNewRestaurant({...newRestaurant, Nom: e.target.value})}
+                placeholder="Nom"
+                required
+              />
+              </td>
+              <td>
+              <input
+                type="text"
+                value={newRestaurant.Adresse}
+                onChange={(e) => setNewRestaurant({...newRestaurant, Adresse: e.target.value})}
+                placeholder="Adresse"
+                required
+              />
+              </td>
+              <td>
+              <button  onClick={() => {handleAddRestaurant()}} className="add">Ajouter</button>
+              </td>
+          </td>
                       </tr>
                     </tbody>
                   </table>
@@ -264,7 +383,8 @@ const Panel = () => {
                               Type="text"
                               value={user.fullName}
                               onChange={(e) =>
-                                handleUserChange(index, "fullName", e.target.value)
+                                handleUserInputChange(index, "fullName", e.target.value)
+
                               }
                             />
                           </td>
@@ -273,12 +393,12 @@ const Panel = () => {
                               Type="text"
                               value={user.role}
                               onChange={(e) =>
-                                handleUserChange(index, "role", e.target.value)
+                                handleUserInputChange(index, "role", e.target.value)
                               }
                             />
                           </td>
                           <td>
-                            <button className="maj" Type="button" onClick={() => handleUserChange(index, "fullName", "new fullName")}>
+                            <button className="maj" Type="button" onClick={() => handleUserChange(user)}>
                               Mettre à jour
                             </button>
                             <button className="sup" onClick={() => handleRemoveUser(user)}>
@@ -318,7 +438,8 @@ const Panel = () => {
                               Type="text"
                               value={product.Name}
                               onChange={(e) =>
-                                handleProductChange(index, "Name", e.target.value)
+                                handleArticleInputChange(index, "Name", e.target.value)
+
                               }
                             />
                           </td>
@@ -327,7 +448,8 @@ const Panel = () => {
                               Type="text"
                               value={product.Description}
                               onChange={(e) =>
-                                handleProductChange(index, "Description", e.target.value)
+                                handleArticleInputChange(index, "Description", e.target.value)
+
                               }
                             />
                           </td>
@@ -336,7 +458,8 @@ const Panel = () => {
                               Type="number"
                               value={product.Prix}
                               onChange={(e) =>
-                                handleProductChange(index, "Prix", e.target.value)
+                                handleArticleInputChange(index, "Prix", e.target.value)
+
                               }
                             />
                           </td>
@@ -345,12 +468,13 @@ const Panel = () => {
                               Type="text"
                               value={product.Type}
                               onChange={(e) =>
-                                handleProductChange(index, "Type", e.target.value)
+                                handleArticleInputChange(index, "Type", e.target.value)
+
                               }
                             />
                           </td>
                           <td>
-                            <button className="maj" Type="button" onClick={() => handleProductChange(index, "Name", "Nouveau Name")}>
+                            <button className="maj" Type="button" onClick={() => handleProductChange(product)}>
                               Mettre à jour
                             </button>
                             <button className="sup" onClick={() => handleRemoveProduct(index)}>
@@ -360,9 +484,46 @@ const Panel = () => {
                         </tr>
                       ))}
                       <tr>
-                        <td>
-                          <button className="add" onClick={handleAddProduct}>Ajouter</button>
-                        </td>
+            {/* Formulaire pour ajouter un restaurant */}
+            <td>
+              <input
+                type="text"
+                value={newProduct.Name}
+                onChange={(e) => setNewProduct({...newProduct, Nom: e.target.value})}
+                placeholder="Name"
+                required
+              />
+              </td>
+              <td>
+              <input
+                type="text"
+                value={newProduct.Description}
+                onChange={(e) =>  setNewProduct({...newProduct, Adresse: e.target.value})}
+                placeholder="Description"
+                required
+              />
+              </td>
+              <td>
+              <input
+                type="text"
+                value={newProduct.Prix}
+                onChange={(e) =>  setNewProduct({...newProduct, Adresse: e.target.value})}
+                placeholder="Prix"
+                required
+              />
+              </td>
+              <td>
+              <input
+                type="text"
+                value={newProduct.Type}
+                onChange={(e) =>  setNewProduct({...newProduct, Adresse: e.target.value})}
+                placeholder="Type"
+                required
+              />
+              </td>
+              <td>
+              <button  onClick={() => {handleAddProduct()}} className="add">Ajouter</button>
+              </td>
                       </tr>
                     </tbody>
                   </table>

@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CommonSection from "../components/UI/common-section/CommonSection";
 import Helmet from "../components/Helmet/Helmet";
 import { Container, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import "../styles/livreur.css";
+import Cookies from 'js-cookie';
+
+import axios from 'axios';
+
 
 const Livreur = () => {
   const [livraisonRecuperee, setLivraisonRecuperee] = useState(false);
@@ -10,6 +14,27 @@ const Livreur = () => {
   const [accepterCommande, setAccepterCommande] = useState(false);
   const [isRecupererModalOpen, setRecupererModalOpen] = useState(false);
   const [isLivrerModalOpen, setLivrerModalOpen] = useState(false);
+
+  const [commandes, setCommandes] = useState([]);
+  const token = Cookies.get("token");
+
+
+useEffect(() => {
+    axios.get('http://localhost:3000/commandes', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log("commandes :", response.data);
+      setCommandes(response.data);
+    })
+    .catch(error => {
+      console.error('Error fetching commandes', error);
+    });
+  }, []);
+
+
 
   const toggleRecupererModal = () => {
     setRecupererModalOpen(!isRecupererModalOpen);
@@ -63,6 +88,38 @@ const Livreur = () => {
                   </tr>
                 </thead>
                 <tbody>
+                {commandes.map((commande, index) => (
+<tr>
+                    <td>Commande</td>
+                    <td>Date de livraison</td>
+                    <td>Nom client</td>
+                    <td>
+                      {accepterCommande ? (
+                        <>
+                          <input
+                            type="checkbox"
+                            checked={livraisonRecuperee}
+                            onChange={handleLivraisonRecupereeChange}
+                            disabled={livraisonRecuperee}
+                          />{" "}
+                          Livraison récupérée
+                          <br />
+                          <input
+                            type="checkbox"
+                            checked={livraisonLivree}
+                            onChange={handleLivraisonLivreeChange}
+                            disabled={!livraisonRecuperee || livraisonLivree}
+                          />{" "}
+                          Livrée
+                        </>
+                      ) : (
+                        <button className="btna" onClick={handleAccepterCommande}>
+                          Accepter la commande
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
                   {/* Exemple de ligne de livraison */}
                   <tr>
                     <td>Commande</td>
