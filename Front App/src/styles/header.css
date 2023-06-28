@@ -8,7 +8,7 @@
   text-align: center;
 }
 .logo img {
-  width: calc(100% - 60%);
+  width: calc(80% - 60%);
   object-fit: contain;
   margin-top: -40px;
 }
