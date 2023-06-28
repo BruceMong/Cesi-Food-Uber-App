@@ -87,15 +87,12 @@ const Checkout = () => {
                   </h5>
                 </div>
               </div>
-<<<<<<< Updated upstream
-            </Col>
-=======
               <form className="checkout__form" onSubmit={handleClick}>
                 <button type="submit" className="addTOCart__btn">
                   Payment
                 </button>
               </form>
->>>>>>> Stashed changes
+              </Col>
           </Row>
         </Container>
       </section>
