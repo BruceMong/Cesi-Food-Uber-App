@@ -56,7 +56,40 @@ router.get('/commandes-with-fullname/', async(req, res) => {
         const commandsSnapshot = await commandsRef.get();
         const commands = [];
 
-        console.log(commandsSnapshot)
+
+        commandsSnapshot.forEach((doc) => {
+            commands.push({ id: doc.id, ...doc.data() });
+        });
+
+
+        const userPromises = commands.map(async(command) => {
+            const userId = command.Id_Client;
+            const userDoc = await admin.firestore().collection('users').doc(userId).get();
+            const userData = userDoc.data();
+            command.fullName = userData.fullName;
+            return command;
+        });
+
+        const commandsWithFullName = await Promise.all(userPromises);
+
+        res.json(commandsWithFullName);
+    } catch (error) {
+        console.error('Error retrieving commands with fullName:', error);
+        res.status(500).json({ error: 'Failed to retrieve commands with fullName' });
+    }
+});
+
+
+
+
+router.get('/commandesLivreur-with-fullname/', async(req, res) => {
+    try {
+        const idLivreur = req.headers["x-user-uid"]; //(XEowgaWc6bZWpqLHqA8AzwE8b9W2)
+        let commandsRef = db.collection('Commandes');
+
+        commandsRef = commandsRef.where('Id_Livreur', '==', idLivreur);
+        const commandsSnapshot = await commandsRef.get();
+        const commands = [];
 
         commandsSnapshot.forEach((doc) => {
             commands.push({ id: doc.id, ...doc.data() });
@@ -83,43 +116,76 @@ router.get('/commandes-with-fullname/', async(req, res) => {
 });
 
 
-
-
-// GET - Récupérer les commandes par ID de livreur
-router.get('/commandesSansLivreur/', livreurMiddleware, async(req, res) => {
+router.get('/commandesClient/', async(req, res) => {
     try {
-        const commandesRef = db.collection('Commandes');
-        const snapshotWithoutLivreur = await commandesRef.where('Id_Livreur', '==', null).get();
+        const idClient = req.headers["x-user-uid"]; //(ex: XEowgaWc6bZWpqLHqA8AzwE8b9W2)
+        let commandsRef = db.collection('Commandes');
 
-        const commandes = [];
+        commandsRef = commandsRef.where('Id_Client', '==', idClient);
+        const commandsSnapshot = await commandsRef.get();
+        const commands = [];
 
-        snapshotWithoutLivreur.forEach(async(doc) => {
-            const commandeData = doc.data();
-            const clientId = commandeData.Id_Client;
-
-            // Récupérer le nom complet de l'utilisateur à partir de l'ID du client
-            const userRef = db.collection('users').doc(clientId);
-            const userDoc = await userRef.get();
-            console.log(userRef)
-            console.log(userDoc)
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                const fullName = userData.fullName;
-                console.log(hey)
-
-
-                // Ajouter le nom complet de l'utilisateur aux données de commande
-                commandes.push({ id: doc.id, ...commandeData, clientFullName: fullName });
-            }
+        commandsSnapshot.forEach((doc) => {
+            commands.push({ id: doc.id, ...doc.data() });
         });
 
+        console.log(commands)
 
-        res.status(200).json(commandes);
+        const userPromises = commands.map(async(command) => {
+            const userId = command.Id_Livreur;
+            if (userId) {
+                const userDoc = await admin.firestore().collection('users').doc(userId).get();
+                const userData = userDoc.data();
+                console.log(userData)
+                command.fullName = userData.fullName;
+            } else
+                command.fullName = "Aucun";
+
+            return command;
+        });
+
+        const commandsWithFullName = await Promise.all(userPromises);
+
+        // Nouvelle requête pour chercher dans la collection 'CommandesQuantitees'
+        const commandQuantitiesPromises = commandsWithFullName.map(async(command) => {
+            const commandId = command.id;
+            const commandQuantitiesDoc = await admin.firestore().collection('CommandesQuantitees').where('Id_Commande', '==', commandId).get();
+            const commandQuantitiesData = commandQuantitiesDoc.docs.map(doc => doc.data());
+            console.log(commandQuantitiesData)
+            command.commandQuantities = commandQuantitiesData;
+            return command;
+        });
+
+        const commandsWithQuantities = await Promise.all(commandQuantitiesPromises);
+
+        // Nouvelle requête pour chercher dans la collection 'Articles'
+        const articlesPromises = commandsWithQuantities.map(async(command) => {
+            command.commandQuantities = await Promise.all(command.commandQuantities.map(async(quantity) => {
+                const articleId = quantity.Id_Article;
+                const articleDoc = await admin.firestore().collection('Articles').doc(articleId).get();
+                const articleData = articleDoc.data();
+                console.log(articleData)
+                quantity.article = articleData;
+                return quantity;
+            }));
+            return command;
+        });
+
+        const commandsWithArticles = await Promise.all(articlesPromises);
+
+        res.json(commandsWithArticles);
     } catch (error) {
-        console.error('Error getting commandes:', error);
-        res.sendStatus(500);
+        console.error('Error retrieving commands with quantities:', error);
+        res.status(500).json({ error: 'Failed to retrieve commands with quantities' });
     }
 });
+
+
+
+
+
+
+
 
 // GET - Récupérer toutes les commandes
 router.get('/commandes', async(req, res) => {

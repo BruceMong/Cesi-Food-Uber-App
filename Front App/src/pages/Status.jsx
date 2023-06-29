@@ -3,18 +3,55 @@ import { useSelector } from "react-redux";
 import { Container, Row, Col } from "reactstrap";
 import { Link } from "react-router-dom";
 import firebase from "../firebase/config";
+import axios from 'axios';
+import Cookies from 'js-cookie';
+
 import "firebase/firestore";
 
 const Status = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   const [showDelivered, setShowDelivered] = useState(false);
+  const [commandes, setCommandes] = useState(false);
   const [deliveries, setDeliveries] = useState([]);
+  const token = Cookies.get("token");
 
   const handleShowDelivered = () => {
     setShowDelivered(!showDelivered);
   };
 
+
+const refresh = () => {
+  axios.get('http://localhost:3000/commandesClient/', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    console.log("commandes COMMANDE :", response.data);
+    // Ajouter la réponse à commandes
+    setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
+    
+  })
+  .catch(error => {
+    console.error('Error fetching commandes', error);
+  });
+}
+
+
   useEffect(() => {
+
+
+
+
+
+
+
+
+
+
+
+
+
     const fetchData = async () => {
       try {
         const db = firebase.firestore();

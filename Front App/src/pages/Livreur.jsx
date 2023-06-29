@@ -19,7 +19,7 @@ const Livreur = () => {
   const token = Cookies.get("token");
 
 
-useEffect(() => {
+  useEffect(() => {
     axios.get('http://localhost:3000/commandes-with-fullname/', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -28,12 +28,23 @@ useEffect(() => {
     .then(response => {
       console.log("commandes :", response.data);
       setCommandes(response.data);
+  
+      // Effectuer une deuxième requête après la première
+      return axios.get('http://localhost:3000/commandesLivreur-with-fullname/', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    })
+    .then(response => {
+      console.log("commandesLivreur :", response.data);
+      // Ajouter la réponse à commandes
+      setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
     })
     .catch(error => {
       console.error('Error fetching commandes', error);
     });
   }, []);
-
 
 
   const toggleRecupererModal = () => {
