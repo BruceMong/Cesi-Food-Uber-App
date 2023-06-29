@@ -62,6 +62,8 @@ const Login = () => {
               // Handle the user profile data
               console.log("User profile:", data);
               // Extract the role from the user profile data
+              Cookies.set('user', data.fullName, { expires: 7 }); // The token will expire after 7 days
+
               const role = data.role;
               console.log("User role:", role);
               // Perform additional actions or redirect to another page
