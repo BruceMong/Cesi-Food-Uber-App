@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState,  useEffect } from "react";
 import Helmet from "../components/Helmet/Helmet";
 import CommonSection from "../components/UI/common-section/CommonSection";
 import { Container, Row, Col } from "reactstrap";
@@ -7,6 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import firebase from "firebase/compat/app";
 import Cookies from 'js-cookie';
 import "firebase/compat/auth";
+import { userDataActions } from "../store/shopping-cart/userData"
+import { useSelector, useDispatch } from "react-redux";
+
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyASyYNB1aOAUkpzlTjpKneKmmYDUQT84GU",
@@ -22,15 +26,37 @@ if (!firebase.apps.length) {
 }
 
 const Login = () => {
+  const dispatch = useDispatch();
+
   const loginNameRef = useRef();
   const loginPasswordRef = useRef();
   const navigate = useNavigate();
+
+  const [tokenUser, setTokenUser] = useState(Cookies.get("token"));
+
+
+  const checkToken = () => {
+    setTokenUser(Cookies.get("token"));
+
+  }
+  
+
+
+
+  useEffect(() => {
+    checkToken()
+    console.log(Cookies.get("token"))
+    console.log(tokenUser)
+
+  }, []);
+
 
   const submitHandler = (e) => {
     e.preventDefault();
 
     const email = loginNameRef.current.value;
     const password = loginPasswordRef.current.value;
+
 
     firebase
       .auth()
@@ -62,6 +88,9 @@ const Login = () => {
               // Handle the user profile data
               console.log("User profile:", data);
               // Extract the role from the user profile data
+              Cookies.set('user', data.fullName, { expires: 7 }); // The token will expire after 7 days
+              Cookies.set('role', data.role, { expires: 7 }); // The token will expire after 7 days
+              dispatch(userDataActions.updateRole(data.role));
               const role = data.role;
               console.log("User role:", role);
               // Perform additional actions or redirect to another page
@@ -79,7 +108,25 @@ const Login = () => {
         console.error("Sign-in error:", errorCode, errorMessage);
       });
   }
-  
+
+
+  const logoutHandler = () => {
+    Cookies.remove('token'); // Supprime le token
+    Cookies.remove('user'); // Supprime le user
+    Cookies.remove('role'); // Supprime le role
+    dispatch(userDataActions.updateRole(null)); // Met à jour le rôle dans le state Redux
+    checkToken()
+
+    navigate('/login'); // Redirige vers la page de connexion
+  }
+
+  if(tokenUser) {
+    return(
+      <button onClick={logoutHandler} className="addTOCart__btn">
+        Logout
+      </button>
+    )
+  }
   return (
     <Helmet title="Login">
       <CommonSection title="Login" />

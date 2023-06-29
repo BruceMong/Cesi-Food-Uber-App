@@ -24,11 +24,26 @@ const Livreur = () => {
     .then(response => {
       console.log("commandes :", response.data);
       setCommandes(response.data);
+
+  
+      // Effectuer une deuxième requête après la première
+      return axios.get('http://localhost:3000/commandesLivreur-with-fullname/', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    })
+    .then(response => {
+      console.log("commandesLivreur :", response.data);
+      // Ajouter la réponse à commandes
+      setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
+
       setLivraisonRecuperee(Array(response.data.length).fill(false));
       setLivraisonLivree(Array(response.data.length).fill(false));
       setAccepterCommande(Array(response.data.length).fill(false));
       setRecupererModalOpen(Array(response.data.length).fill(false));
       setLivrerModalOpen(Array(response.data.length).fill(false));
+
     })
     .catch(error => {
       console.error('Error fetching commandes', error);

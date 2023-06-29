@@ -3,46 +3,47 @@ import { useSelector } from "react-redux";
 import { Container, Row, Col } from "reactstrap";
 import { Link } from "react-router-dom";
 import firebase from "../firebase/config";
+import axios from 'axios';
+import Cookies from 'js-cookie';
+
 import "firebase/firestore";
 
 const Status = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   const [showDelivered, setShowDelivered] = useState(false);
+  const [commandes, setCommandes] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
+
+
+  const token = Cookies.get("token");
 
   const handleShowDelivered = () => {
     setShowDelivered(!showDelivered);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const db = firebase.firestore();
-        let snapshot;
-        if (showDelivered) {
-          snapshot = await db
-            .collection("Commandes")
-            .where("Statut", "==", "Livrée")
-            .get();
-        } else {
-          snapshot = await db
-            .collection("Commandes")
-            .where("Statut", "==", "En livraison")
-            .get();
-        }
-        const data = snapshot.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
-        });
-        if (data) {
-          setDeliveries(data);
-        }
-      } catch (error) {
-        console.log("Error fetching data from Firebase:", error);
-      }
-    };
 
-    fetchData();
-  }, [showDelivered]);
+const refresh = () => {
+  axios.get('http://localhost:3000/commandesClient/', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    console.log("commandes COMMANDE :", response.data);
+    // Ajouter la réponse à commandes
+    setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
+    
+  })
+  .catch(error => {
+    console.error('Error fetching commandes', error);
+  });
+}
+
+
+  useEffect(() => {
+    refresh();
+
+  }, []);
 
   return (
     <div>
@@ -74,9 +75,9 @@ const Status = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {deliveries.map((delivery, index) => (
-                        <Tr delivery={delivery} key={index} />
-                      ))}
+                    {commandes.filter(commande => commande.Statut === "Livrée").map((commande, index) => (
+                          <Tr commande={commande} key={index} />
+                    ))}
                     </tbody>
                   </table>
                 </>
@@ -94,9 +95,9 @@ const Status = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {deliveries.map((delivery, index) => (
-                        <Tr delivery={delivery} key={index} />
-                      ))}
+                    {commandes.filter(commande => commande.Statut !== "Livrée").map((commande, index) => (
+                          <Tr commande={commande} key={index} />
+                    ))}
                     </tbody>
                   </table>
                 </>
@@ -109,141 +110,41 @@ const Status = () => {
   );
 };
 
-const Tr = (props) => {
-  const { id, Date_Livraison, Id_Client, Id_Livreur, Statut } = props.delivery;
-  const [clientData, setClientData] = useState(null);
-  const [foodDataArray, setFoodDataArray] = useState([]);
-  const [livreurData, setLivreurData] = useState(null);
-  const [theClientData, setTheClientData] = useState(null);
-  const [totalPrice, setTotalPrice] = useState(0);
+const Tr = ({commande, key}) => {
+  const userName = Cookies.get("user");
+console.log(userName)
 
-  useEffect(() => {
-    const fetchClientData = async () => {
-      try {
-        const db = firebase.firestore();
-        const snapshot2 = await db
-          .collection("CommandesQuantitees")
-          .where("Id_Commande", "==", id)
-          .get();
-        const data2 = snapshot2.docs.map((doc) => doc.data());
+  const { id, Date_Livraison, Id_Client, Id_Livreur, Statut, fullName, commandQuantities } = commande;
 
-        if (data2.length > 0) {
-          setClientData(data2);
-        }
-      } catch (error) {
-        console.log("Error fetching CommandesQuantitées data from Firebase:", error);
-      }
-    };
 
-    fetchClientData();
-  }, []);
+  let totalPrice = commandQuantities.reduce((total, article) => {
+    return total + parseInt(article.article.Prix);
+}, 0);
 
-  useEffect(() => {
-    const fetchClientData2 = async () => {
-      try {
-        if (clientData !== null && clientData.length > 0) {
-          const db = firebase.firestore();
-          const dataPromises = clientData.map(async (dataItem) => {
-            const articleId = dataItem.Id_Article;
-            const snapshot3 = await db
-              .collection("Articles")
-              .doc(articleId)
-              .get();
-            const data3 = snapshot3.data();
-            return data3;
-          });
-
-          const articleDataArray = await Promise.all(dataPromises);
-          setFoodDataArray(articleDataArray);
-        }
-      } catch (error) {
-        console.log("Error fetching ARITCLES data from Firebase:", error);
-      }
-    };
-
-    fetchClientData2();
-  }, [clientData]);
-
-  useEffect(() => {
-    const fetchLivreurData3 = async () => {
-      try {
-        const db = firebase.firestore();
-        const articleId = Id_Livreur;
-        const snapshot4 = await db.collection("users").doc(articleId).get();
-        const data4 = snapshot4.data();
-        setLivreurData(data4);
-      } catch (error) {
-        console.log("Error fetching livreur data from Firebase:", error);
-      }
-    };
-
-    fetchLivreurData3();
-  }, [Id_Livreur]);
-
-  useEffect(() => {
-    const fetchClientData4 = async () => {
-      try {
-        const db = firebase.firestore();
-        const articleId = Id_Client;
-        const snapshot5 = await db.collection("users").doc(articleId).get();
-        const data5 = snapshot5.data();
-        setTheClientData(data5);
-      } catch (error) {
-        console.log("Error fetching client data from Firebase:", error);
-      }
-    };
-
-    fetchClientData4();
-  }, [Id_Client]);
-
-  useEffect(() => {
-    const calculateTotalPrice = () => {
-      let totalPrice = 0;
-      if (
-        clientData &&
-        clientData.length > 0 &&
-        foodDataArray.length > 0
-      ) {
-        clientData.forEach((data, index) => {
-          const foodData = foodDataArray[index];
-          if (foodData) {
-            const quantity = data.Quantitee;
-            const price = foodData.Prix;
-            totalPrice += quantity * price;
-          }
-        });
-      }
-      setTotalPrice(totalPrice);
-    };
-
-    calculateTotalPrice();
-  }, [clientData, foodDataArray]);
 
   return (
     <>
-      {clientData && clientData.length > 0 && (
         <tr>
           <td className="text-center">
-            {theClientData ? theClientData.fullName : ""}
+            {userName}
           </td>
           <td className="text-center">
-            {livreurData ? livreurData.fullName : ""}
+            {fullName }
           </td>
           <td className="text-center">
-            {clientData.map((data, index) => (
+            {commandQuantities.map((data, index) => (
               <span key={index}>
-                {foodDataArray[index] ? foodDataArray[index].Name : ""} (
-                {data.Quantitee})
-                {index !== clientData.length - 1 && ", "}
+                {data.article.Name} 
+                {" x" + data.Quantitee}
+                {index !== commandQuantities.length - 1 && ", "}
               </span>
             ))}
           </td>
           <td className="text-center">{totalPrice}</td>
           <td className="text-center">
-            {Date_Livraison ? Date_Livraison.toDate().toLocaleString() : ""}
+            { (new Date(Date_Livraison._seconds * 1000).toLocaleDateString())}
           </td>
         </tr>
-      )}
     </>
   );
 };
