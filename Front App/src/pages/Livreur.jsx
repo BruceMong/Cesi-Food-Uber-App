@@ -4,20 +4,16 @@ import Helmet from "../components/Helmet/Helmet";
 import { Container, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import "../styles/livreur.css";
 import Cookies from 'js-cookie';
-
 import axios from 'axios';
 
-
 const Livreur = () => {
-  const [livraisonRecuperee, setLivraisonRecuperee] = useState(false);
-  const [livraisonLivree, setLivraisonLivree] = useState(false);
-  const [accepterCommande, setAccepterCommande] = useState(false);
-  const [isRecupererModalOpen, setRecupererModalOpen] = useState(false);
-  const [isLivrerModalOpen, setLivrerModalOpen] = useState(false);
-
+  const [livraisonRecuperee, setLivraisonRecuperee] = useState([]);
+  const [livraisonLivree, setLivraisonLivree] = useState([]);
+  const [accepterCommande, setAccepterCommande] = useState([]);
+  const [isRecupererModalOpen, setRecupererModalOpen] = useState([]);
+  const [isLivrerModalOpen, setLivrerModalOpen] = useState([]);
   const [commandes, setCommandes] = useState([]);
   const token = Cookies.get("token");
-
 
   useEffect(() => {
     axios.get('http://localhost:3000/commandes-with-fullname/', {
@@ -28,6 +24,7 @@ const Livreur = () => {
     .then(response => {
       console.log("commandes :", response.data);
       setCommandes(response.data);
+
   
       // Effectuer une deuxième requête après la première
       return axios.get('http://localhost:3000/commandesLivreur-with-fullname/', {
@@ -40,45 +37,61 @@ const Livreur = () => {
       console.log("commandesLivreur :", response.data);
       // Ajouter la réponse à commandes
       setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
+
+      setLivraisonRecuperee(Array(response.data.length).fill(false));
+      setLivraisonLivree(Array(response.data.length).fill(false));
+      setAccepterCommande(Array(response.data.length).fill(false));
+      setRecupererModalOpen(Array(response.data.length).fill(false));
+      setLivrerModalOpen(Array(response.data.length).fill(false));
+
     })
     .catch(error => {
       console.error('Error fetching commandes', error);
     });
   }, []);
 
-
-  const toggleRecupererModal = () => {
-    setRecupererModalOpen(!isRecupererModalOpen);
+  const toggleRecupererModal = (index) => {
+    const updatedRecupererModalOpen = [...isRecupererModalOpen];
+    updatedRecupererModalOpen[index] = !isRecupererModalOpen[index];
+    setRecupererModalOpen(updatedRecupererModalOpen);
   };
 
-  const toggleLivrerModal = () => {
-    setLivrerModalOpen(!isLivrerModalOpen);
+  const toggleLivrerModal = (index) => {
+    const updatedLivrerModalOpen = [...isLivrerModalOpen];
+    updatedLivrerModalOpen[index] = !isLivrerModalOpen[index];
+    setLivrerModalOpen(updatedLivrerModalOpen);
   };
 
-  const handleAccepterCommande = () => {
-    setAccepterCommande(true);
+  const handleAccepterCommande = (index) => {
+    const updatedAccepterCommande = [...accepterCommande];
+    updatedAccepterCommande[index] = true;
+    setAccepterCommande(updatedAccepterCommande);
   };
 
-  const handleLivraisonRecupereeChange = () => {
-    if (!livraisonRecuperee) {
-      toggleRecupererModal();
+  const handleLivraisonRecupereeChange = (index) => {
+    if (!livraisonRecuperee[index]) {
+      toggleRecupererModal(index);
     }
   };
 
-  const handleLivraisonLivreeChange = () => {
-    if (livraisonRecuperee && !livraisonLivree) {
-      toggleLivrerModal();
+  const handleLivraisonLivreeChange = (index) => {
+    if (livraisonRecuperee[index] && !livraisonLivree[index]) {
+      toggleLivrerModal(index);
     }
   };
 
-  const handleConfirmationRecuperer = () => {
-    setRecupererModalOpen(false);
-    setLivraisonRecuperee(true);
+  const handleConfirmationRecuperer = (index) => {
+    const updatedLivraisonRecuperee = [...livraisonRecuperee];
+    updatedLivraisonRecuperee[index] = true;
+    setLivraisonRecuperee(updatedLivraisonRecuperee);
+    toggleRecupererModal(index);
   };
 
-  const handleConfirmationLivrer = () => {
-    setLivrerModalOpen(false);
-    setLivraisonLivree(true);
+  const handleConfirmationLivrer = (index) => {
+    const updatedLivraisonLivree = [...livraisonLivree];
+    updatedLivraisonLivree[index] = true;
+    setLivraisonLivree(updatedLivraisonLivree);
+    toggleLivrerModal(index);
   };
 
   return (
@@ -99,39 +112,33 @@ const Livreur = () => {
                   </tr>
                 </thead>
                 <tbody>
-                {commandes.map((commande, index) => (
-<tr>
-                    <td>{commande.id}</td>
-                    <td>{ (new Date(commande.Date_Livraison._seconds * 1000).toLocaleDateString())}</td>
-                    <td>{commande.fullName}</td>
-                    <td>
-                      {accepterCommande ? (
-                        <>
-                          <input
-                            type="checkbox"
-                            checked={livraisonRecuperee}
-                            onChange={handleLivraisonRecupereeChange}
-                            disabled={livraisonRecuperee}
-                          />{" "}
-                          Livraison récupérée
-                          <br />
-                          <input
-                            type="checkbox"
-                            checked={livraisonLivree}
-                            onChange={handleLivraisonLivreeChange}
-                            disabled={!livraisonRecuperee || livraisonLivree}
-                          />{" "}
-                          Livrée
-                        </>
-                      ) : (
-                        <button className="btna" onClick={handleAccepterCommande}>
-                          Accepter la commande
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                
+                  {commandes.map((commande, index) => (
+                    <tr key={index}>
+                      <td>{commande.id}</td>
+                      <td>{(new Date(commande.Date_Livraison._seconds * 1000).toLocaleDateString())}</td>
+                      <td>{commande.fullName}</td>
+                      <td>
+                        {accepterCommande[index] ? (
+                          <>
+                            {!livraisonRecuperee[index] && (
+                              <button className={`btn${index} btn-primary`} onClick={() => handleLivraisonRecupereeChange(index)}>
+                                Récupérer la livraison
+                              </button>
+                            )}
+                            {livraisonRecuperee[index] && !livraisonLivree[index] && (
+                              <button className={`btn${index} btn-primary`} onClick={() => handleLivraisonLivreeChange(index)}>
+                                Marquer comme livrée
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <button className={`btn${index} btn-primary`} onClick={() => handleAccepterCommande(index)}>
+                            Accepter la commande
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </Col>
@@ -140,32 +147,36 @@ const Livreur = () => {
       </section>
 
       {/* Modal de récupération de la commande */}
-      <Modal isOpen={isRecupererModalOpen} toggle={toggleRecupererModal}>
-        <ModalHeader toggle={toggleRecupererModal}>Confirmation</ModalHeader>
-        <ModalBody>Êtes-vous sûr de vouloir récupérer cette commande ?</ModalBody>
-        <ModalFooter>
-          <button className="btn btn-primary" onClick={handleConfirmationRecuperer}>
-            Confirmer
-          </button>
-          <button className="btn btn-secondary" onClick={toggleRecupererModal}>
-            Annuler
-          </button>
-        </ModalFooter>
-      </Modal>
+      {commandes.map((_, index) => (
+        <Modal key={index} isOpen={isRecupererModalOpen[index]} toggle={() => toggleRecupererModal(index)}>
+          <ModalHeader toggle={() => toggleRecupererModal(index)}>Confirmation</ModalHeader>
+          <ModalBody>Êtes-vous sûr de vouloir récupérer cette commande ?</ModalBody>
+          <ModalFooter>
+            <button className="btn btn-primary" onClick={() => handleConfirmationRecuperer(index)}>
+              Confirmer
+            </button>
+            <button className="btn btn-secondary" onClick={() => toggleRecupererModal(index)}>
+              Annuler
+            </button>
+          </ModalFooter>
+        </Modal>
+      ))}
 
       {/* Modal de marquage de la commande comme livrée */}
-      <Modal isOpen={isLivrerModalOpen} toggle={toggleLivrerModal}>
-        <ModalHeader toggle={toggleLivrerModal}>Confirmation</ModalHeader>
-        <ModalBody>Êtes-vous sûr de vouloir marquer cette commande comme livrée ?</ModalBody>
-        <ModalFooter>
-          <button className="btn btn-primary" onClick={handleConfirmationLivrer}>
-            Confirmer
-          </button>
-          <button className="btn btn-secondary" onClick={toggleLivrerModal}>
-            Annuler
-          </button>
-        </ModalFooter>
-      </Modal>
+      {commandes.map((_, index) => (
+        <Modal key={index} isOpen={isLivrerModalOpen[index]} toggle={() => toggleLivrerModal(index)}>
+          <ModalHeader toggle={() => toggleLivrerModal(index)}>Confirmation</ModalHeader>
+          <ModalBody>Êtes-vous sûr de vouloir marquer cette commande comme livrée ?</ModalBody>
+          <ModalFooter>
+            <button className="btn btn-primary" onClick={() => handleConfirmationLivrer(index)}>
+              Confirmer
+            </button>
+            <button className="btn btn-secondary" onClick={() => toggleLivrerModal(index)}>
+              Annuler
+            </button>
+          </ModalFooter>
+        </Modal>
+      ))}
     </Helmet>
   );
 };

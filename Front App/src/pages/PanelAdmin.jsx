@@ -333,34 +333,32 @@ const Panel = () => {
                           </td> {/* Déplacement des boutons à l'intérieur de chaque ligne */}
                         </tr>
                       ))}
-                      <tr>
-                      <td>
-            {/* Formulaire pour ajouter un restaurant */}
-            <td>
-              <input
-                type="text"
-                value={newRestaurant.Nom}
-                onChange={(e) => setNewRestaurant({...newRestaurant, Nom: e.target.value})}
-                placeholder="Nom"
-                required
-              />
-              </td>
-              <td>
-              <input
-                type="text"
-                value={newRestaurant.Adresse}
-                onChange={(e) => setNewRestaurant({...newRestaurant, Adresse: e.target.value})}
-                placeholder="Adresse"
-                required
-              />
-              </td>
-              <td>
-              <button  onClick={() => {handleAddRestaurant()}} className="add">Ajouter</button>
-              </td>
-          </td>
-                      </tr>
-                    </tbody>
+                      </tbody>
                   </table>
+            {/* Formulaire pour ajouter un restaurant */}
+
+<div className="form-container">
+  <input
+    className="nomcase"
+    type="text"
+    value={newRestaurant.Nom}
+    onChange={(e) => setNewRestaurant({...newRestaurant, Nom: e.target.value})}
+    placeholder="Nom"
+    required
+  />
+
+  <input
+    className="adcase"
+    type="text"
+    value={newRestaurant.Adresse}
+    onChange={(e) => setNewRestaurant({...newRestaurant, Adresse: e.target.value})}
+    placeholder="Adresse"
+    required
+  />
+
+  <button onClick={() => {handleAddRestaurant()}} className="add">Ajouter</button>
+</div>
+
                 </div>
               )}
 

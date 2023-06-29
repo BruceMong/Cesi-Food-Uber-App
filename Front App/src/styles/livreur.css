@@ -1,25 +1,25 @@
-.btna {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    text-align: center;
-    text-decoration: none;
-  }
-  
-  .btna:hover {
-    background-color: #45a049;
-  }
-  
-  .btna:active {
-    background-color: #3e8e41;
-  }
-  
-  .btna:focus {
-    outline: none;
-  }
-  
+.btn-primary {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background-color: #45a049;
+}
+
+.btn-primary:active {
+  background-color: #3e8e41;
+}
+
+.btn-primary:focus {
+  outline: none;
+}
+
