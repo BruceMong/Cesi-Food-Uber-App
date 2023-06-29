@@ -20,7 +20,7 @@ const Livreur = () => {
 
 
 useEffect(() => {
-    axios.get('http://localhost:3000/commandes', {
+    axios.get('http://localhost:3000/commandes-with-fullname/', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -90,9 +90,9 @@ useEffect(() => {
                 <tbody>
                 {commandes.map((commande, index) => (
 <tr>
-                    <td>Commande</td>
-                    <td>Date de livraison</td>
-                    <td>Nom client</td>
+                    <td>{commande.id}</td>
+                    <td>{ (new Date(commande.Date_Livraison._seconds * 1000).toLocaleDateString())}</td>
+                    <td>{commande.fullName}</td>
                     <td>
                       {accepterCommande ? (
                         <>
@@ -120,38 +120,7 @@ useEffect(() => {
                     </td>
                   </tr>
                 ))}
-                  {/* Exemple de ligne de livraison */}
-                  <tr>
-                    <td>Commande</td>
-                    <td>Date de livraison</td>
-                    <td>Nom client</td>
-                    <td>
-                      {accepterCommande ? (
-                        <>
-                          <input
-                            type="checkbox"
-                            checked={livraisonRecuperee}
-                            onChange={handleLivraisonRecupereeChange}
-                            disabled={livraisonRecuperee}
-                          />{" "}
-                          Livraison récupérée
-                          <br />
-                          <input
-                            type="checkbox"
-                            checked={livraisonLivree}
-                            onChange={handleLivraisonLivreeChange}
-                            disabled={!livraisonRecuperee || livraisonLivree}
-                          />{" "}
-                          Livrée
-                        </>
-                      ) : (
-                        <button className="btna" onClick={handleAccepterCommande}>
-                          Accepter la commande
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                  {/* Fin de l'exemple de ligne de livraison */}
+                
                 </tbody>
               </table>
             </Col>
