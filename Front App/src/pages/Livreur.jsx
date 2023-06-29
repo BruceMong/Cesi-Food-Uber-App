@@ -15,39 +15,47 @@ const Livreur = () => {
   const [commandes, setCommandes] = useState([]);
   const token = Cookies.get("token");
 
-  useEffect(() => {
-    axios.get('http://localhost:3000/commandes-with-fullname/', {
+
+const refresh = ()=> {
+  axios.get('http://localhost:3000/commandes-with-fullname/', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    console.log("commandes :", response.data);
+    setCommandes(response.data);
+
+
+    // Effectuer une deuxième requête après la première
+    return axios.get('http://localhost:3000/commandesLivreur-with-fullname/', {
       headers: {
         Authorization: `Bearer ${token}`
       }
-    })
-    .then(response => {
-      console.log("commandes :", response.data);
-      setCommandes(response.data);
-
-  
-      // Effectuer une deuxième requête après la première
-      return axios.get('http://localhost:3000/commandesLivreur-with-fullname/', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-    })
-    .then(response => {
-      console.log("commandesLivreur :", response.data);
-      // Ajouter la réponse à commandes
-      setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
-
-      setLivraisonRecuperee(Array(response.data.length).fill(false));
-      setLivraisonLivree(Array(response.data.length).fill(false));
-      setAccepterCommande(Array(response.data.length).fill(false));
-      setRecupererModalOpen(Array(response.data.length).fill(false));
-      setLivrerModalOpen(Array(response.data.length).fill(false));
-
-    })
-    .catch(error => {
-      console.error('Error fetching commandes', error);
     });
+  })
+  .then(response => {
+    console.log("commandesLivreur :", response.data);
+    // Ajouter la réponse à commandes
+    setCommandes(prevCommandes => [...prevCommandes, ...response.data]);
+
+    setLivraisonRecuperee(Array(response.data.length).fill(false));
+    setLivraisonLivree(Array(response.data.length).fill(false));
+    setAccepterCommande(Array(response.data.length).fill(false));
+    setRecupererModalOpen(Array(response.data.length).fill(false));
+    setLivrerModalOpen(Array(response.data.length).fill(false));
+
+  })
+  .catch(error => {
+    console.error('Error fetching commandes', error);
+  });
+
+}
+
+
+
+  useEffect(() => {
+    refresh()
   }, []);
 
   const toggleRecupererModal = (index) => {
@@ -62,11 +70,19 @@ const Livreur = () => {
     setLivrerModalOpen(updatedLivrerModalOpen);
   };
 
-  const handleAccepterCommande = (index) => {
-    const updatedAccepterCommande = [...accepterCommande];
-    updatedAccepterCommande[index] = true;
-    setAccepterCommande(updatedAccepterCommande);
-  };
+  const handleLivraison = (commande) => {
+    const id= commande.id
+      axios.get(`http://localhost:3000/changeCommande/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(response => {
+    refresh()
+
+        console.log("commandes :", response.data);
+    });
+  }
 
   const handleLivraisonRecupereeChange = (index) => {
     if (!livraisonRecuperee[index]) {
@@ -114,28 +130,38 @@ const Livreur = () => {
                 <tbody>
                   {commandes.map((commande, index) => (
                     <tr key={index}>
-                      <td>{commande.id}</td>
+                    
+                    <td>{commande.id}</td>
                       <td>{(new Date(commande.Date_Livraison._seconds * 1000).toLocaleDateString())}</td>
                       <td>{commande.fullName}</td>
                       <td>
-                        {accepterCommande[index] ? (
+                      {commande.Statut === "Livrée" ? "Livrée" : (
+                      <button className={`btn${index} btn-primary`} onClick={() => handleLivraison(commande)}>
+                                {commande.Statut === "En attente" && "Accepter la commande"}
+                                {commande.Statut === "En récuperation" && "Récupérer la livraison"}
+                                {commande.Statut === "En livraison" && "Marquer comme livrée"}
+                               
+                      </button>
+                        )}
+                        
+{/*                         {accepterCommande[index] ? (
                           <>
                             {!livraisonRecuperee[index] && (
-                              <button className={`btn${index} btn-primary`} onClick={() => handleLivraisonRecupereeChange(index)}>
+                              <button className={`btn${index} btn-primary`} onClick={() => handleLivraisonRecupereeChange(commande)}>
                                 Récupérer la livraison
                               </button>
                             )}
                             {livraisonRecuperee[index] && !livraisonLivree[index] && (
-                              <button className={`btn${index} btn-primary`} onClick={() => handleLivraisonLivreeChange(index)}>
+                              <button className={`btn${index} btn-primary`} onClick={() => handleLivraisonLivreeChange(commande)}>
                                 Marquer comme livrée
                               </button>
                             )}
                           </>
                         ) : (
-                          <button className={`btn${index} btn-primary`} onClick={() => handleAccepterCommande(index)}>
+                          <button className={`btn${index} btn-primary`} onClick={() => handleAccepterCommande(commande)}>
                             Accepter la commande
                           </button>
-                        )}
+                        )} */}
                       </td>
                     </tr>
                   ))}

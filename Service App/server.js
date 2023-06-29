@@ -23,26 +23,9 @@ app.use("/", articlesRouter);
 app.use("/", usersRouter);
 app.use("/", commandesRouter);
 
-function startListening(ports, index = 0) {
-    if (index >= ports.length) {
-        console.log('No available ports found in the list');
-        return;
-    }
+// Use the PORT environment variable if it's available
+const port = process.env.PORT || 3000;
 
-    const port = ports[index];
-
-    const server = app.listen(port, () => console.log(`Server has started on port: ${port}`));
-
-    server.on('error', (error) => {
-        if (error.code === 'EADDRINUSE') {
-            console.log(`Port ${port} is in use, trying the next one...`);
-            startListening(ports, index + 1);
-        } else {
-            console.error('Error starting the server: ', error);
-        }
-    });
-}
-
-startListening(ports);
+app.listen(port, () => console.log(`Server has started on port: ${port}`));
 
 module.exports = app;
