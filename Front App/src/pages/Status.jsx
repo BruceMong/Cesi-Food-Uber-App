@@ -13,6 +13,8 @@ const Status = () => {
   const [showDelivered, setShowDelivered] = useState(false);
   const [commandes, setCommandes] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
+
+
   const token = Cookies.get("token");
 
   const handleShowDelivered = () => {
@@ -40,6 +42,7 @@ const refresh = () => {
 
   useEffect(() => {
     refresh();
+
   }, []);
 
   return (

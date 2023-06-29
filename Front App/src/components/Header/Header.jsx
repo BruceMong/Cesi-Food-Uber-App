@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 
 import { Container } from "reactstrap";
 import logo from "../../assets/images/res-logo.png";
@@ -6,6 +6,7 @@ import { NavLink, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import { cartUiActions } from "../../store/shopping-cart/cartUiSlice";
+import Cookies from 'js-cookie';
 
 import "../../styles/header.css";
 
@@ -44,28 +45,50 @@ const Header = () => {
   const menuRef = useRef(null);
   const headerRef = useRef(null);
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  const role = useSelector((state) => state.userData.role);
   const dispatch = useDispatch();
-
+console.log(role)
   const toggleMenu = () => menuRef.current.classList.toggle("show__menu");
 
   const toggleCart = () => {
     dispatch(cartUiActions.toggle());
   };
+  const [filteredNavLinks, setFilteredNavLinks] = useState(nav__links);
+
+  
+
 
   useEffect(() => {
-/*     window.addEventListener("scroll", () => {
-      if (
-        document.body.scrollTop > 80 ||
-        document.documentElement.scrollTop > 80
-      ) {
-        headerRef.current.classList.add("header__shrink");
-      } else {
-        headerRef.current.classList.remove("header__shrink");
+    console.log("changeeeeeeeee")
+     setFilteredNavLinks(  nav__links.filter((navLink) => {
+      if (role === "admin") {
+        return true; // Afficher toutes les routes pour le rôle "admin"
+      } else if (role === "Livreur") {
+        return (
+          navLink.display !== "Panier" &&
+          navLink.display !== "Historique" &&
+          navLink.display !== "Admin"
+        ); // Exclure les routes "Panier", "Historique" et "Admin" pour le rôle "livreur"
+      } else if (role === "Client") {
+        return (
+          navLink.display !== "Admin" &&
+          navLink.display !== "Livreur"
+        ); // Exclure les routes "Admin" et "Livreur" pour le rôle "client"
       }
-    });
+      else 
+      {
+        return (
+          navLink.display !== "Admin" &&
+          navLink.display !== "Livreur"        && 
+          navLink.display !== "Panier" &&
+          navLink.display !== "Historique" 
+        ); // Exclure les routes "Admin" et "Livreur" pour le rôle "client"
+      }
+    }))
+  }, [role]);
 
-    return () => window.removeEventListener("scroll"); */
-  }, []);
+
+
 
   return (
     <header className="header" ref={headerRef}>
@@ -79,7 +102,7 @@ const Header = () => {
           {/* ======= menu ======= */}
           <div className="navigation" ref={menuRef} onClick={toggleMenu}>
             <div className="menu d-flex align-items-center gap-5">
-              {nav__links.map((item, index) => (
+              {filteredNavLinks.map((item, index) => (
                 <NavLink
                   to={item.path}
                   key={index}

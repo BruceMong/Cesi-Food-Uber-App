@@ -5,7 +5,9 @@ const userDataSlice = createSlice({
     initialState: { role: null },
 
     reducers: {
-
+        updateRole(state, action) {
+            state.role = action.payload;
+        },
     },
 });
 
