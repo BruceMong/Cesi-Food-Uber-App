@@ -66,3 +66,17 @@ button.add {
 button.add:hover {
   background-color: #219651;
 }
+
+.form-container {
+  display: flex;
+  align-items: center;
+}
+
+.adcase {
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+.add{
+  margin-top: -1rem;
+}
