@@ -81,8 +81,10 @@ console.log(role)
           navLink.display !== "Admin" &&
           navLink.display !== "Livreur"        && 
           navLink.display !== "Panier" &&
-          navLink.display !== "Historique" 
-        ); // Exclure les routes "Admin" et "Livreur" pour le rôle "client"
+          navLink.display !== "Historique"  &&
+          navLink.display !== "Profil"
+
+        ); 
       }
     }))
   }, [role]);

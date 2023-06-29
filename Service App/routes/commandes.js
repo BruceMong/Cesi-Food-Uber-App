@@ -45,7 +45,44 @@ router.get('/commandesLivreur/', livreurMiddleware, async(req, res) => {
 });
 
 
+router.get('/changeCommande/:id', async(req, res) => {
 
+    const livreurId = req.headers["x-user-uid"];
+
+    try {
+        const id = req.params.id;
+        const db = admin.firestore();
+        const commandeRef = db.collection('Commandes').doc(id);
+        const doc = await commandeRef.get();
+
+        if (!doc.exists) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+
+        let commande = doc.data();
+        let newStatut;
+        switch (commande.Statut) {
+            case 'En attente':
+                newStatut = 'En récuperation';
+                break;
+            case 'En récuperation':
+                newStatut = 'En livraison';
+                break;
+            case 'En livraison':
+                newStatut = 'Livrée';
+                break;
+            default:
+                return res.status(400).json({ message: "Statut de la commande invalide" });
+        }
+
+        await commandeRef.update({ Statut: newStatut, Id_Livreur: livreurId });
+
+        res.json({ message: "Statut de la commande mis à jour avec succès", commande });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur du serveur" });
+    }
+});
 
 router.get('/commandes-with-fullname/', async(req, res) => {
     try {
