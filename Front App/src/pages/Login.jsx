@@ -10,6 +10,7 @@ import "firebase/compat/auth";
 import { userDataActions } from "../store/shopping-cart/userData"
 import { useSelector, useDispatch } from "react-redux";
 
+import "../styles/login.css";
 
 
 const firebaseConfig = {
@@ -122,7 +123,7 @@ const Login = () => {
 
   if(tokenUser) {
     return(
-      <button onClick={logoutHandler} className="addTOCart__btn">
+      <button onClick={logoutHandler} className="btnlogout">
         Logout
       </button>
     )

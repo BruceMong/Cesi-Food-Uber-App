@@ -1,0 +1,28 @@
+.btnlogout {
+    display: block;
+    margin: 8rem auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #f00;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btnlogout:hover {
+    background-color: #c00;
+  }
+  
+  .btnlogout:focus {
+    outline: none;
+  }
+  
+  .btnlogout:active {
+    background-color: #900;
+  }
+  
